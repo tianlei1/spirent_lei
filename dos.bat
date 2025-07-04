@@ -30,6 +30,7 @@ if %~1 equ kill             goto :KILL
 if %~1 equ connect          goto :CONNECT
 if %~1 equ upload           goto :UPLOAD
 if %~1 equ download         goto :DOWNLOAD
+if %~1 equ poweroff         goto :POWEROFF
 
 ::exit
 goto :eof
@@ -52,6 +53,7 @@ goto :eof
     echo 10.dos run_ut [l2l3,ccl,...]: start bll ut test
     echo 11.dos upload [src_file]: upload windows src_file to linux build server ltian@10.61.43.53:~/share 
     echo 12.dos download [target_file] [target_dir]: download target_file from linux build server ltian@10.61.43.53:~/share/target_file to windows target_dir
+    echo 13.dos poweroff: poweroff laptop
 goto :eof    
 
 
@@ -229,6 +231,14 @@ goto :eof
 :DOWNLOAD
     sshpass -p <password> scp ltian@10.61.43.53:~/share/%~2  %~3
 goto :eof
+
+
+::funtion <POWEROFF>
+:POWEROFF  
+    REM Force shutdown the PC immediately
+    shutdown /s /f /t 0
+goto :eof
+
 
 ::function FindTargetDirectory
 :FindTargetDirectory
