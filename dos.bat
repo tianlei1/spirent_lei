@@ -1,9 +1,9 @@
 @echo off
 
 
-::set current dos cmd color as green
+::set current dos cmd console's color as green
 color 2
-::rename current dos cmd name as parameter 2 
+::rename current dos cmd console's name as parameter 2 
 title %2%
 ::set root directory
 SET STC_BUILD_ROOT=c:\work\testcenter
@@ -31,9 +31,17 @@ if %~1 equ connect          goto :CONNECT
 if %~1 equ upload           goto :UPLOAD
 if %~1 equ download         goto :DOWNLOAD
 if %~1 equ poweroff         goto :POWEROFF
+if %~1 equ restart          goto :RESTART
+if %~1 equ install          goto :INSTALL
+if %~1 equ uninstall        goto :UNINSTALL
+if %~1 equ upgrade          goto :UPGRADE
 
 ::exit
-goto :eof
+goto :end
+
+
+
+
 
 
 
@@ -46,15 +54,19 @@ goto :eof
     echo 3. dos cdi: cd root directory integration
     echo 4. dos bd [ui, bll, l2l3, ccl]: build 64bit ui,bll,l2l3,ccl 
     echo 5. dos bd32 [ui, bll, l2l3, ccl]: build 32bit ui,bll,l2l3,ccl 
-    echo 6. dos start [stc, stc_32, stc_debug]: launch ..\integration\bin\Debug\TestCenter.exe
+    echo 6. dos launch [stc, stc_32, stc_debug]: launch ..\integration\bin\Debug\TestCenter.exe
     echo 7. dos kill stc: kill ..\integration\bin\Debug\TestCenter.exe
     echo 8. dos connect [ltian, vm, aft-a1-dev03/10.14.19.16]: connect to build server, calabasas vm, chassis
-    echo 9. dos update_iq: generate iq view json files and install to bin\debug_x64
+    echo 9. dos update_iq: generate iq view json files and install them to bin\debug_x64
     echo 10.dos run_ut [l2l3,ccl,...]: start bll ut test
     echo 11.dos upload [src_file]: upload windows src_file to linux build server ltian@10.61.43.53:~/share 
     echo 12.dos download [target_file] [target_dir]: download target_file from linux build server ltian@10.61.43.53:~/share/target_file to windows target_dir
     echo 13.dos poweroff: poweroff laptop
-goto :eof    
+    echo 14.dos restart: restart laptop
+    echo 15.dos install [stc]: install C:\Users\ltian\Desktop\stc\9.90\"Spirent TestCenter Application x64"
+    echo 16.dos uninstall [stc]: uninstall "Spirent TestCenter Application x64"
+    echo 17.dos upgrade [9.90.xxxx]: upgrade integration to 9.90.xxxx
+goto :eof  
 
 
 ::function <CONFIGURE>  :setup build env for 32bit/64bit/anycpu on windows
@@ -192,7 +204,8 @@ goto :eof
     if "%2%" equ "vm" (
         REM start mstsc -v bdc-ltian.calenglab.spirentcom.com
         
-        SET SERVER=host_name //windows support rdp protocol
+        REM windows which enabled rdp
+        SET SERVER=host_name
         SET USERNAME=usr_name
         SET PASSWORD=password
 
@@ -237,6 +250,63 @@ goto :eof
 :POWEROFF  
     REM Force shutdown the PC immediately
     shutdown /s /f /t 0
+goto :eof
+
+
+::function <RESTART>
+:RESTART 
+    REM Force restart the pc immediately
+    shutdown /r /f /t 0
+goto :eof
+
+
+::funtion <INSTALL>
+:INSTALL
+    REM install C:\Users\ltian\Desktop\stc\9.90
+    if %~2 equ stc (
+        echo       .........STC install in progress.........
+        REM start /wait "" "C:\Users\ltian\Desktop\stc\9.90\Spirent TestCenter Application x64.exe" /silent /install
+        "C:\Users\ltian\Desktop\stc\9.90\Spirent TestCenter Application x64.exe" /silent /install /norestart
+        if %errorlevel% equ 0 (
+            echo       .........install Successful.........
+        )
+    )
+goto :eof
+
+
+::funtion <UNINSTALL>
+:UNINSTALL
+    if %~2 equ stc (
+        REM uninstall Spirent TestCenter Application x64.exe
+        echo       .........STC uninstall in progress.........
+        start /wait "" "C:\Users\ltian\Desktop\stc\9.90\Spirent TestCenter Application x64.exe" /silent /uninstall 
+        echo %errorlevel%
+        if %errorlevel% equ 0 (
+            echo       .........uninstall Completed.........
+        )else (
+             echo       .........uninstall Failed.........
+        )
+    )else (
+        echo       .........Invalid parameter......... 
+    )
+goto :eof
+
+::function <UPGRADE>
+:UPGRADE
+    REM uninstall installed stc 
+    set para=stc
+    call :UNINSTALL %%d %para%
+    
+    REM copy ci build to local 
+    echo       .........Copy CI build %2% in progress......... 
+    copy "\\calengnas01.spirentcom.com\software-builds\spirent\testcenter\integration\9.90\gui_bll\%~2\Spirent TestCenter Application x64.exe" "C:\Users\ltian\Desktop\stc\9.90\"
+    if %errorlevel% equ 0 (
+        echo       .........Copy CI build %2% Completed.........
+        set para=stc
+        call :INSTALL %%d %para%
+    )else (
+        echo       .........Copy CI build %2% failed.........
+     )
 goto :eof
 
 
