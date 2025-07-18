@@ -35,11 +35,13 @@ if %~1 equ restart          goto :RESTART
 if %~1 equ install          goto :INSTALL
 if %~1 equ uninstall        goto :UNINSTALL
 if %~1 equ upgrade          goto :UPGRADE
-if %~1 equ open             goto :OPEN
-if %~1 equ diff             goto :DIFF
 
 ::exit
 goto :end
+
+
+
+
 
 
 
@@ -64,9 +66,7 @@ goto :end
     echo 15.dos install [stc]: install C:\Users\ltian\Desktop\stc\9.90\"Spirent TestCenter Application x64"
     echo 16.dos uninstall [stc]: uninstall "Spirent TestCenter Application x64"
     echo 17.dos upgrade [9.90.xxxx]: upgrade integration to 9.90.xxxx
-    echo 18.dos open [editable file]: open editable file(*.txt,*.py,*.yaml,*.xml....) with notepad++
-    echo 19.dos diff [editable file1] [editable file2]: compare two editable files difference
-goto :eof    
+goto :eof  
 
 
 ::function <CONFIGURE>  :setup build env for 32bit/64bit/anycpu on windows
@@ -291,7 +291,6 @@ goto :eof
     )
 goto :eof
 
-
 ::function <UPGRADE>
 :UPGRADE
     REM uninstall installed stc 
@@ -309,17 +308,6 @@ goto :eof
         echo       .........Copy CI build %2% failed.........
      )
 goto :eof
-
-
-::function <OPEN>
-:OPEN
-    "C:\Program Files\Notepad++\notepad++.exe" %~2
-goto :eof
-
-
-::function <DIFF>
-:DIFF
-    "C:\Program Files\WinMerge\WinMergeU.exe" %~2 %~3
 
 
 ::function FindTargetDirectory
